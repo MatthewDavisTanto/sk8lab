@@ -154,12 +154,14 @@ if (!stage) {
     // ====================
     // AUTO MOTION STATE
     // ====================
-
+    
     let skateboardModel = null;
-
+    
     let userInteracting = false;
-
+    
     let resumeAutoMotionTimer = null;
+    
+    let basePosition = new THREE.Vector3();
 
 
     // ====================
@@ -243,6 +245,10 @@ if (!stage) {
 
             skateboard.position.sub(
                 center
+            );
+
+            basePosition.copy(
+                skateboard.position
             );
 
 
@@ -371,6 +377,7 @@ if (!stage) {
 
             // Floating movement
             skateboardModel.position.y =
+                basePosition.y +
                 Math.sin(
                     time * 1.2
                 ) * 0.05;
