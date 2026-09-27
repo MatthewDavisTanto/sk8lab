@@ -19,9 +19,9 @@ if (!stage) {
 
 } else {
 
-    // Hide the old CSS skateboard
-    // because we are now using the real 3D model
-    const oldSkateboard = document.getElementById("skateboard");
+    // Hide old CSS skateboard
+    const oldSkateboard =
+        document.getElementById("skateboard");
 
     if (oldSkateboard) {
         oldSkateboard.style.display = "none";
@@ -77,6 +77,7 @@ if (!stage) {
     renderer.domElement.style.width = "100%";
     renderer.domElement.style.height = "100%";
     renderer.domElement.style.zIndex = "2";
+    renderer.domElement.style.touchAction = "none";
 
     stage.appendChild(renderer.domElement);
 
@@ -85,18 +86,20 @@ if (!stage) {
     // LIGHTING
     // ====================
 
-    const ambientLight = new THREE.AmbientLight(
-        0xffffff,
-        2
-    );
+    const ambientLight =
+        new THREE.AmbientLight(
+            0xffffff,
+            2
+        );
 
     scene.add(ambientLight);
 
 
-    const keyLight = new THREE.DirectionalLight(
-        0xffffff,
-        3
-    );
+    const keyLight =
+        new THREE.DirectionalLight(
+            0xffffff,
+            3
+        );
 
     keyLight.position.set(
         5,
@@ -107,10 +110,11 @@ if (!stage) {
     scene.add(keyLight);
 
 
-    const fillLight = new THREE.DirectionalLight(
-        0xbfc8ff,
-        1.5
-    );
+    const fillLight =
+        new THREE.DirectionalLight(
+            0xbfc8ff,
+            1.5
+        );
 
     fillLight.position.set(
         -5,
@@ -131,9 +135,11 @@ if (!stage) {
     );
 
     controls.enableDamping = true;
+
     controls.enablePan = false;
 
     controls.minDistance = 2;
+
     controls.maxDistance = 8;
 
     controls.target.set(
@@ -146,61 +152,128 @@ if (!stage) {
 
 
     // ====================
+    // AUTO MOTION STATE
+    // ====================
+
+    let skateboardModel = null;
+
+    let userInteracting = false;
+
+    let resumeAutoMotionTimer = null;
+
+
+    // ====================
+    // USER INTERACTION
+    // ====================
+
+    controls.addEventListener(
+        "start",
+        () => {
+
+            userInteracting = true;
+
+            if (resumeAutoMotionTimer) {
+
+                clearTimeout(
+                    resumeAutoMotionTimer
+                );
+
+            }
+
+        }
+    );
+
+
+    controls.addEventListener(
+        "end",
+        () => {
+
+            if (resumeAutoMotionTimer) {
+
+                clearTimeout(
+                    resumeAutoMotionTimer
+                );
+
+            }
+
+            resumeAutoMotionTimer =
+                setTimeout(
+                    () => {
+
+                        userInteracting = false;
+
+                    },
+                    1200
+                );
+
+        }
+    );
+
+
+    // ====================
     // LOAD SKATEBOARD
     // ====================
 
     const loader = new GLTFLoader();
 
     loader.load(
+
         "skateboard.glb",
 
         function (gltf) {
 
             const skateboard = gltf.scene;
 
-            // Add model to scene
-            scene.add(skateboard);
+            skateboardModel = skateboard;
 
 
             // ====================
             // CENTER MODEL
             // ====================
 
-            const box = new THREE.Box3().setFromObject(
-                skateboard
-            );
+            const box =
+                new THREE.Box3().setFromObject(
+                    skateboard
+                );
 
-            const center = box.getCenter(
-                new THREE.Vector3()
-            );
+            const center =
+                box.getCenter(
+                    new THREE.Vector3()
+                );
 
-            skateboard.position.sub(center);
+            skateboard.position.sub(
+                center
+            );
 
 
             // ====================
             // AUTO SCALE
             // ====================
 
-            const size = box.getSize(
-                new THREE.Vector3()
-            );
+            const size =
+                box.getSize(
+                    new THREE.Vector3()
+                );
 
-            const maxSize = Math.max(
-                size.x,
-                size.y,
-                size.z
-            );
+            const maxSize =
+                Math.max(
+                    size.x,
+                    size.y,
+                    size.z
+                );
 
             const desiredSize = 4.5;
 
             const scale =
                 desiredSize / maxSize;
 
-            skateboard.scale.setScalar(scale);
+            skateboard.scale.setScalar(
+                scale
+            );
 
 
             // ====================
-            // ROTATION
+            // INITIAL ROTATION
             // ====================
 
             skateboard.rotation.x =
@@ -211,7 +284,7 @@ if (!stage) {
 
 
             // ====================
-            // CONTROLS TARGET
+            // CONTROLS
             // ====================
 
             controls.target.set(
@@ -230,7 +303,10 @@ if (!stage) {
         },
 
 
-        // Loading progress
+        // ====================
+        // LOADING PROGRESS
+        // ====================
+
         function (xhr) {
 
             if (xhr.total) {
@@ -248,7 +324,10 @@ if (!stage) {
         },
 
 
-        // Loading error
+        // ====================
+        // LOADING ERROR
+        // ====================
+
         function (error) {
 
             console.error(
@@ -257,6 +336,7 @@ if (!stage) {
             );
 
         }
+
     );
 
 
@@ -266,7 +346,45 @@ if (!stage) {
 
     function animate() {
 
-        requestAnimationFrame(animate);
+        requestAnimationFrame(
+            animate
+        );
+
+
+        // --------------------
+        // AUTO SKATEBOARD MOTION
+        // --------------------
+
+        if (
+            skateboardModel &&
+            !userInteracting
+        ) {
+
+            const time =
+                performance.now() * 0.001;
+
+
+            // Slow rotation
+            skateboardModel.rotation.y +=
+                0.0025;
+
+
+            // Floating movement
+            skateboardModel.position.y =
+                Math.sin(
+                    time * 1.2
+                ) * 0.05;
+
+
+            // Very subtle tilt
+            skateboardModel.rotation.x =
+                THREE.MathUtils.degToRad(8) +
+                Math.sin(
+                    time * 0.8
+                ) * 0.025;
+
+        }
+
 
         controls.update();
 
@@ -310,7 +428,6 @@ if (!stage) {
         );
 
     }
-
 
     window.addEventListener(
         "resize",
