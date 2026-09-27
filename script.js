@@ -8,194 +8,313 @@ console.log("SK8//LAB 3D SYSTEM LOADED");
 
 
 // ====================
-// SCENE
+// FIND 3D CONTAINER
 // ====================
 
-const scene = new THREE.Scene();
+const stage = document.querySelector(".skateboard-stage");
 
+if (!stage) {
 
-// ====================
-// CAMERA
-// ====================
+    console.error("SKATEBOARD STAGE NOT FOUND");
 
-const camera = new THREE.PerspectiveCamera(
-    45,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
-);
+} else {
 
-camera.position.set(0, 2, 6);
+    // Hide the old CSS skateboard
+    // because we are now using the real 3D model
+    const oldSkateboard = document.getElementById("skateboard");
 
-
-// ====================
-// RENDERER
-// ====================
-
-const renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    alpha: true
-});
-
-renderer.setSize(
-    window.innerWidth,
-    window.innerHeight
-);
-
-renderer.setPixelRatio(
-    Math.min(window.devicePixelRatio, 2)
-);
-
-renderer.domElement.style.position = "fixed";
-renderer.domElement.style.top = "0";
-renderer.domElement.style.left = "0";
-renderer.domElement.style.zIndex = "9999";
-
-document.body.appendChild(renderer.domElement);
-
-
-// ====================
-// LIGHTING
-// ====================
-
-const ambientLight = new THREE.AmbientLight(
-    0xffffff,
-    2
-);
-
-scene.add(ambientLight);
-
-
-const directionalLight = new THREE.DirectionalLight(
-    0xffffff,
-    3
-);
-
-directionalLight.position.set(
-    5,
-    10,
-    5
-);
-
-scene.add(directionalLight);
-
-
-// ====================
-// CONTROLS
-// ====================
-
-const controls = new OrbitControls(
-    camera,
-    renderer.domElement
-);
-
-controls.enableDamping = true;
-
-controls.enablePan = false;
-
-controls.minDistance = 2;
-
-controls.maxDistance = 10;
-
-controls.target.set(
-    0,
-    0,
-    0
-);
-
-controls.update();
-
-
-// ====================
-// LOAD SKATEBOARD
-// ====================
-
-const loader = new GLTFLoader();
-
-loader.load(
-    "skateboard.glb",
-
-    function (gltf) {
-
-        const skateboard = gltf.scene;
-
-        skateboard.scale.set(
-            2,
-            2,
-            2
-        );
-
-        scene.add(skateboard);
-
-        console.log("SKATEBOARD MODEL LOADED");
-
-    },
-
-    function (xhr) {
-
-        if (xhr.total) {
-
-            const progress =
-                (xhr.loaded / xhr.total) * 100;
-
-            console.log(
-                "LOADING:",
-                Math.round(progress) + "%"
-            );
-
-        }
-
-    },
-
-    function (error) {
-
-        console.error(
-            "SKATEBOARD MODEL FAILED TO LOAD",
-            error
-        );
-
+    if (oldSkateboard) {
+        oldSkateboard.style.display = "none";
     }
-);
 
 
-// ====================
-// ANIMATION
-// ====================
+    // ====================
+    // SCENE
+    // ====================
 
-function animate() {
+    const scene = new THREE.Scene();
 
-    requestAnimationFrame(animate);
+
+    // ====================
+    // CAMERA
+    // ====================
+
+    const camera = new THREE.PerspectiveCamera(
+        45,
+        stage.clientWidth / stage.clientHeight,
+        0.1,
+        1000
+    );
+
+    camera.position.set(
+        0,
+        1.5,
+        5
+    );
+
+
+    // ====================
+    // RENDERER
+    // ====================
+
+    const renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true
+    });
+
+    renderer.setPixelRatio(
+        Math.min(window.devicePixelRatio, 2)
+    );
+
+    renderer.setSize(
+        stage.clientWidth,
+        stage.clientHeight
+    );
+
+    renderer.domElement.style.position = "absolute";
+    renderer.domElement.style.top = "0";
+    renderer.domElement.style.left = "0";
+    renderer.domElement.style.width = "100%";
+    renderer.domElement.style.height = "100%";
+    renderer.domElement.style.zIndex = "2";
+
+    stage.appendChild(renderer.domElement);
+
+
+    // ====================
+    // LIGHTING
+    // ====================
+
+    const ambientLight = new THREE.AmbientLight(
+        0xffffff,
+        2
+    );
+
+    scene.add(ambientLight);
+
+
+    const keyLight = new THREE.DirectionalLight(
+        0xffffff,
+        3
+    );
+
+    keyLight.position.set(
+        5,
+        8,
+        5
+    );
+
+    scene.add(keyLight);
+
+
+    const fillLight = new THREE.DirectionalLight(
+        0xbfc8ff,
+        1.5
+    );
+
+    fillLight.position.set(
+        -5,
+        3,
+        -4
+    );
+
+    scene.add(fillLight);
+
+
+    // ====================
+    // ORBIT CONTROLS
+    // ====================
+
+    const controls = new OrbitControls(
+        camera,
+        renderer.domElement
+    );
+
+    controls.enableDamping = true;
+    controls.enablePan = false;
+
+    controls.minDistance = 2;
+    controls.maxDistance = 8;
+
+    controls.target.set(
+        0,
+        0,
+        0
+    );
 
     controls.update();
 
-    renderer.render(
-        scene,
-        camera
+
+    // ====================
+    // LOAD SKATEBOARD
+    // ====================
+
+    const loader = new GLTFLoader();
+
+    loader.load(
+        "skateboard.glb",
+
+        function (gltf) {
+
+            const skateboard = gltf.scene;
+
+            // Add model to scene
+            scene.add(skateboard);
+
+
+            // ====================
+            // CENTER MODEL
+            // ====================
+
+            const box = new THREE.Box3().setFromObject(
+                skateboard
+            );
+
+            const center = box.getCenter(
+                new THREE.Vector3()
+            );
+
+            skateboard.position.sub(center);
+
+
+            // ====================
+            // AUTO SCALE
+            // ====================
+
+            const size = box.getSize(
+                new THREE.Vector3()
+            );
+
+            const maxSize = Math.max(
+                size.x,
+                size.y,
+                size.z
+            );
+
+            const desiredSize = 3.2;
+
+            const scale =
+                desiredSize / maxSize;
+
+            skateboard.scale.setScalar(scale);
+
+
+            // ====================
+            // ROTATION
+            // ====================
+
+            skateboard.rotation.x =
+                THREE.MathUtils.degToRad(8);
+
+            skateboard.rotation.z =
+                THREE.MathUtils.degToRad(-18);
+
+
+            // ====================
+            // CONTROLS TARGET
+            // ====================
+
+            controls.target.set(
+                0,
+                0,
+                0
+            );
+
+            controls.update();
+
+
+            console.log(
+                "SKATEBOARD MODEL LOADED"
+            );
+
+        },
+
+
+        // Loading progress
+        function (xhr) {
+
+            if (xhr.total) {
+
+                const progress =
+                    (xhr.loaded / xhr.total) * 100;
+
+                console.log(
+                    "LOADING:",
+                    Math.round(progress) + "%"
+                );
+
+            }
+
+        },
+
+
+        // Loading error
+        function (error) {
+
+            console.error(
+                "SKATEBOARD MODEL FAILED TO LOAD",
+                error
+            );
+
+        }
     );
 
-}
 
-animate();
+    // ====================
+    // ANIMATION
+    // ====================
+
+    function animate() {
+
+        requestAnimationFrame(animate);
+
+        controls.update();
+
+        renderer.render(
+            scene,
+            camera
+        );
+
+    }
+
+    animate();
 
 
-// ====================
-// WINDOW RESIZE
-// ====================
+    // ====================
+    // RESIZE
+    // ====================
 
-window.addEventListener(
-    "resize",
-    () => {
+    function resizeRenderer() {
+
+        const width =
+            stage.clientWidth;
+
+        const height =
+            stage.clientHeight;
+
+        if (
+            width === 0 ||
+            height === 0
+        ) {
+            return;
+        }
 
         camera.aspect =
-            window.innerWidth /
-            window.innerHeight;
+            width / height;
 
         camera.updateProjectionMatrix();
 
         renderer.setSize(
-            window.innerWidth,
-            window.innerHeight
+            width,
+            height
         );
 
     }
-);
+
+
+    window.addEventListener(
+        "resize",
+        resizeRenderer
+    );
+
+}
