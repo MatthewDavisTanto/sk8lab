@@ -191,7 +191,7 @@ if (!stage) {
                 size.z
             );
 
-            const desiredSize = 3.2;
+            const desiredSize = 4.5;
 
             const scale =
                 desiredSize / maxSize;
