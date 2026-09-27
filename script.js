@@ -1,1 +1,3 @@
-console.log("SK8//LAB SYSTEM ONLINE");
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+
+console.log("THREE.JS LOADED");
