@@ -2,14 +2,10 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.m
 
 console.log("THREE.JS LOADED");
 
-// ====================
-// 3D SCENE
-// ====================
-
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(
-    45,
+    75,
     window.innerWidth / window.innerHeight,
     0.1,
     1000
@@ -24,23 +20,20 @@ const renderer = new THREE.WebGLRenderer({
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 
+renderer.domElement.style.position = "fixed";
+renderer.domElement.style.top = "0";
+renderer.domElement.style.left = "0";
+renderer.domElement.style.zIndex = "9999";
+
 document.body.appendChild(renderer.domElement);
 
-// ====================
-// TEST OBJECT
-// ====================
-
-const geometry = new THREE.BoxGeometry(1, 1, 1);
+const geometry = new THREE.BoxGeometry(2, 2, 2);
 
 const material = new THREE.MeshNormalMaterial();
 
 const cube = new THREE.Mesh(geometry, material);
 
 scene.add(cube);
-
-// ====================
-// ANIMATION
-// ====================
 
 function animate() {
 
