@@ -152,67 +152,6 @@ if (!stage) {
 
 
     // ====================
-    // AUTO MOTION STATE
-    // ====================
-    
-    let skateboardModel = null;
-    
-    let userInteracting = false;
-    
-    let resumeAutoMotionTimer = null;
-    
-    let basePosition = new THREE.Vector3();
-
-
-    // ====================
-    // USER INTERACTION
-    // ====================
-
-    controls.addEventListener(
-        "start",
-        () => {
-
-            userInteracting = true;
-
-            if (resumeAutoMotionTimer) {
-
-                clearTimeout(
-                    resumeAutoMotionTimer
-                );
-
-            }
-
-        }
-    );
-
-
-    controls.addEventListener(
-        "end",
-        () => {
-
-            if (resumeAutoMotionTimer) {
-
-                clearTimeout(
-                    resumeAutoMotionTimer
-                );
-
-            }
-
-            resumeAutoMotionTimer =
-                setTimeout(
-                    () => {
-
-                        userInteracting = false;
-
-                    },
-                    1200
-                );
-
-        }
-    );
-
-
-    // ====================
     // LOAD SKATEBOARD
     // ====================
 
@@ -226,7 +165,9 @@ if (!stage) {
 
             const skateboard = gltf.scene;
 
-            skateboardModel = skateboard;
+
+            // Add model
+            scene.add(skateboard);
 
 
             // ====================
@@ -247,13 +188,9 @@ if (!stage) {
                 center
             );
 
-            basePosition.copy(
-                skateboard.position
-            );
-
 
             // ====================
-            // AUTO SCALE
+            // SCALE MODEL
             // ====================
 
             const size =
@@ -290,7 +227,7 @@ if (!stage) {
 
 
             // ====================
-            // CONTROLS
+            // CONTROLS TARGET
             // ====================
 
             controls.target.set(
@@ -355,43 +292,6 @@ if (!stage) {
         requestAnimationFrame(
             animate
         );
-
-
-        // --------------------
-        // AUTO SKATEBOARD MOTION
-        // --------------------
-
-        if (
-            skateboardModel &&
-            !userInteracting
-        ) {
-
-            const time =
-                performance.now() * 0.001;
-
-
-            // Slow rotation
-            skateboardModel.rotation.y +=
-                0.0025;
-
-
-            // Floating movement
-            skateboardModel.position.y =
-                basePosition.y +
-                Math.sin(
-                    time * 1.2
-                ) * 0.05;
-
-
-            // Very subtle tilt
-            skateboardModel.rotation.x =
-                THREE.MathUtils.degToRad(8) +
-                Math.sin(
-                    time * 0.8
-                ) * 0.025;
-
-        }
-
 
         controls.update();
 
