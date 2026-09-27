@@ -2,7 +2,9 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.m
 
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/controls/OrbitControls.js";
 
-console.log("THREE.JS + ORBIT CONTROLS LOADED");
+import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js";
+
+console.log("SK8//LAB 3D SYSTEM LOADED");
 
 
 // ====================
@@ -23,7 +25,7 @@ const camera = new THREE.PerspectiveCamera(
     1000
 );
 
-camera.position.set(0, 1, 5);
+camera.position.set(0, 2, 6);
 
 
 // ====================
@@ -53,38 +55,33 @@ document.body.appendChild(renderer.domElement);
 
 
 // ====================
-// LIGHT
+// LIGHTING
 // ====================
 
-const light = new THREE.HemisphereLight(
+const ambientLight = new THREE.AmbientLight(
     0xffffff,
-    0x222222,
+    2
+);
+
+scene.add(ambientLight);
+
+
+const directionalLight = new THREE.DirectionalLight(
+    0xffffff,
     3
 );
 
-scene.add(light);
-
-
-// ====================
-// TEST CUBE
-// ====================
-
-const geometry = new THREE.BoxGeometry(2, 2, 2);
-
-const material = new THREE.MeshStandardMaterial({
-    color: 0xdfff00
-});
-
-const cube = new THREE.Mesh(
-    geometry,
-    material
+directionalLight.position.set(
+    5,
+    10,
+    5
 );
 
-scene.add(cube);
+scene.add(directionalLight);
 
 
 // ====================
-// ORBIT CONTROLS
+// CONTROLS
 // ====================
 
 const controls = new OrbitControls(
@@ -96,13 +93,69 @@ controls.enableDamping = true;
 
 controls.enablePan = false;
 
-controls.minDistance = 3;
+controls.minDistance = 2;
 
-controls.maxDistance = 8;
+controls.maxDistance = 10;
 
-controls.target.set(0, 0, 0);
+controls.target.set(
+    0,
+    0,
+    0
+);
 
 controls.update();
+
+
+// ====================
+// LOAD SKATEBOARD
+// ====================
+
+const loader = new GLTFLoader();
+
+loader.load(
+    "skateboard.glb",
+
+    function (gltf) {
+
+        const skateboard = gltf.scene;
+
+        skateboard.scale.set(
+            2,
+            2,
+            2
+        );
+
+        scene.add(skateboard);
+
+        console.log("SKATEBOARD MODEL LOADED");
+
+    },
+
+    function (xhr) {
+
+        if (xhr.total) {
+
+            const progress =
+                (xhr.loaded / xhr.total) * 100;
+
+            console.log(
+                "LOADING:",
+                Math.round(progress) + "%"
+            );
+
+        }
+
+    },
+
+    function (error) {
+
+        console.error(
+            "SKATEBOARD MODEL FAILED TO LOAD",
+            error
+        );
+
+    }
+);
 
 
 // ====================
@@ -119,13 +172,14 @@ function animate() {
         scene,
         camera
     );
+
 }
 
 animate();
 
 
 // ====================
-// RESIZE
+// WINDOW RESIZE
 // ====================
 
 window.addEventListener(
